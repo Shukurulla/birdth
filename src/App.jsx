@@ -10,6 +10,7 @@ import { getImages, getGreetings } from "./db";
 import "antd/dist/reset.css";
 import { Route, Routes } from "react-router-dom";
 import Admin from "./admin";
+import moment from "moment/moment";
 
 const BOOTSTRAP_ICONS_CDN =
   "https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css";
@@ -23,11 +24,24 @@ const App = () => {
   const [page, setPage] = useState(0);
   const [activeMenu, setActiveMenu] = useState("menu1");
   const itemsPerPage = 7;
-  const [greeting, setGreeting] = useState({});
+  const [greeting, setGreeting] = useState([]);
   const carouselRef = useRef(null);
   const imagesLoadedRef = useRef({});
   const loadingTimeoutRef = useRef(null);
   const goToTimeoutRef = useRef(null);
+
+  // Bugungi sanani olish
+  const today = new Date();
+  const todayFormatted = moment(today).format("YYYY-MM-DD"); // Format: "kun-oy"
+
+  // Bugungi sanada tug'ilganlar ro'yxati
+  const todaysGreetings = useMemo(() => {
+    return greeting.filter((item) => {
+      const birthDate = item.text.birthDate; // Format: "kun-oy"
+      console.log(todayFormatted);
+      return birthDate === todayFormatted;
+    });
+  }, [greeting, todayFormatted]);
 
   // Memorized menu items for better performance
   const menuItems = useMemo(
@@ -50,7 +64,6 @@ const App = () => {
 
   // Improved image preloading with priority and cancelation
   const preloadImages = useCallback((imageUrls) => {
-    // Faqat ayni paytda ko'rinadigan rasmlarni yuklash (faqat 3-5 dona)
     const visibleImages = imageUrls.slice(0, 5);
 
     visibleImages.forEach((url) => {
@@ -63,13 +76,12 @@ const App = () => {
       }
     });
 
-    // Qolgan rasmlarni keyinroq yuklash
     setTimeout(() => {
       const remainingImages = imageUrls.slice(5);
       remainingImages.forEach((url) => {
         if (!imagesLoadedRef.current[url]) {
           const img = new Image();
-          img.loading = "lazy"; // Browser's native lazy loading
+          img.loading = "lazy";
           img.src = url;
           img.onload = () => {
             imagesLoadedRef.current[url] = true;
@@ -92,16 +104,9 @@ const App = () => {
     const loadImages = async () => {
       setLoading(true);
       try {
-        // Eski rasmlarni tezroq tozalash
         setImages([]);
-
-        // Rasmlarni yuklash
         const storedImages = await getImages(activeMenu);
-
-        // Rasmlarni o'lchami bo'yicha tartiblash (kichikroqlari oldin)
         const sortedImages = [...storedImages].sort((a, b) => {
-          // Agar o'lcham ma'lumoti bo'lsa, u bo'yicha tartiblash
-          // Yo'q bo'lsa, oddiy tartibda qoldirish
           return a.size && b.size ? a.size - b.size : 0;
         });
 
@@ -109,10 +114,8 @@ const App = () => {
         setPage(0);
         setCurrentIndex(0);
 
-        // Oldindan yuklashda birinchi 3-5 rasmga ustunlik berish
         preloadImages(sortedImages.map((img) => img.image));
 
-        // Carouselni moslashtirilgan reset qilish
         if (carouselRef.current) {
           if (loadingTimeoutRef.current)
             clearTimeout(loadingTimeoutRef.current);
@@ -154,7 +157,7 @@ const App = () => {
       try {
         const storedGreetings = await getGreetings();
         if (storedGreetings && storedGreetings.length > 0) {
-          setGreeting(storedGreetings[0]);
+          setGreeting(storedGreetings);
         }
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -166,7 +169,7 @@ const App = () => {
     loadGreeting();
 
     return () => {
-      controller.abort(); // Request cancelation when component unmounts
+      controller.abort();
     };
   }, []);
 
@@ -174,23 +177,15 @@ const App = () => {
   const { totalPages, visibleThumbnails, startIndex, endIndex } =
     useMemo(() => {
       const totalPages = Math.ceil(images.length / itemsPerPage);
-
-      // Joriy slayd pozitsiyasiga asoslangan markaz indeksini hisoblash
       const centerIndex = currentIndex;
-
-      // Joriy slaydning har tomonida ko'rsatiladigan rasmchalar sonini hisoblash
       const halfItemCount = Math.floor(itemsPerPage / 2);
-
-      // Slayd oynasi uchun boshlang'ich va tugash indekslarini hisoblash
       let startIndex = Math.max(0, centerIndex - halfItemCount);
       let endIndex = Math.min(images.length - 1, startIndex + itemsPerPage - 1);
 
-      // Agar oxiriga yaqin bo'lsak, doimo itemsPerPage rasmchalarni ko'rsatish uchun startIndex ni sozlash
       if (endIndex - startIndex + 1 < itemsPerPage && startIndex > 0) {
         startIndex = Math.max(0, endIndex - itemsPerPage + 1);
       }
 
-      // Ko'rinadigan rasmchalarni slayd oynasi yordamida olish
       const visibleThumbnails = images.slice(startIndex, endIndex + 1);
 
       return { totalPages, visibleThumbnails, startIndex, endIndex };
@@ -214,7 +209,7 @@ const App = () => {
         setCurrentIndex(current);
       },
       speed: 500,
-      autoplay: images.length > 1, // O'zgartirildi: faqat birdan ko'p rasm bo'lganda
+      autoplay: images.length > 1,
       autoplaySpeed: 3000,
       dots: false,
       effect: "fade",
@@ -256,7 +251,6 @@ const App = () => {
     return (
       <div className="flex space-x-3">
         {visibleThumbnails.map((img, index) => {
-          // Absolyut indeks endi startIndex asosida hisoblanadi
           const absoluteIndex = index + startIndex;
           return (
             <div
@@ -327,7 +321,6 @@ const App = () => {
           <div className="flex items-center justify-center mt-4 space-x-3 relative">
             {renderThumbnails()}
 
-            {/* O'ZGARTIRILGAN QISM: Oldingi va keyingi tugmalar */}
             <button
               onClick={handlePrevPage}
               className="absolute left-5"
@@ -362,27 +355,41 @@ const App = () => {
   // Optimized greeting card rendering
   const renderGreetingCard = useMemo(() => {
     return (
-      <div className="bg-white w-100 h-100 p-2 rounded-xl shadow-lg">
-        <div className="flex justify-center">
-          {greeting && greeting.image ? (
-            <img
-              src={greeting.image}
-              alt="userImage"
-              className="w-40 h-40 rounded-full border-4 border-gray-300 shadow-md"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-40 h-40 rounded-full border-4 border-gray-300 shadow-md bg-gray-100 flex items-center justify-center">
-              <span className="text-gray-400">Rasm yo'q</span>
+      <div className="bg-white w-100 h-100 p-4 rounded-xl shadow-lg">
+        <h2 className="text-xl font-semibold text-center mb-4">
+          Bugungi tavalludlar
+        </h2>
+        {todaysGreetings.length > 0 ? (
+          todaysGreetings.map((item, index) => (
+            <div
+              key={index}
+              className="flex flex-col items-center mb-4 p-4 bg-gray-50 rounded-lg shadow-sm"
+            >
+              <img
+                src={item.text.image}
+                alt="userImage"
+                className="w-24 h-24 rounded-full border-4 border-blue-200 shadow-md"
+                loading="lazy"
+              />
+              <p className="mt-2 text-lg font-medium">
+                {item.text.firstName} {item.text.lastName}
+              </p>
+              <p className="text-sm text-gray-500">{item.text.birthDate}</p>
+              <p>
+                Hurmatli {item.text.firstName}
+                {item.text.lastName} sizni bugungi tugulgan kuningiz bilan
+                tabriklaymiz🎉🎉
+              </p>
             </div>
-          )}
-        </div>
-        <p className="text-center py-3">
-          {greeting && greeting.text ? greeting.text : ""}
-        </p>
+          ))
+        ) : (
+          <div className="text-center text-gray-400 py-4">
+            Bugun tavallud topganlar yo'q.
+          </div>
+        )}
       </div>
     );
-  }, [greeting]);
+  }, [todaysGreetings]);
 
   return (
     <>

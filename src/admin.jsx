@@ -55,77 +55,16 @@ const resizeImage = (file, maxWidth = 1200, maxHeight = 800, quality = 0.7) => {
   });
 };
 
-// Umumiy rasm thumbnailini yaratish funksiyasi
-const createThumbnail = (
-  file,
-  maxWidth = 100,
-  maxHeight = 100,
-  quality = 0.6
-) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const thumbnailImage = canvas.toDataURL("image/jpeg", quality);
-        resolve(thumbnailImage);
-      };
-    };
-  });
-};
-
-// Rasmni Base64 dan Blob ga aylantirish
-const base64ToBlob = (base64, mimeType) => {
-  const byteCharacters = atob(base64.split(",")[1]);
-  const byteArrays = [];
-
-  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-    const slice = byteCharacters.slice(offset, offset + 512);
-    const byteNumbers = new Array(slice.length);
-
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-
-  return new Blob(byteArrays, { type: mimeType });
-};
-
 const Admin = () => {
   const [activeMenu, setActiveMenu] = useState("menu1");
   const [images, setImages] = useState([]);
-  const [greeting, setGreeting] = useState(null);
+  const [greetings, setGreetings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [greetingText, setGreetingText] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [selectedGreetingImage, setSelectedGreetingImage] = useState(null);
   const [editingGreeting, setEditingGreeting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -134,7 +73,6 @@ const Admin = () => {
 
   // Rasmlarni keshga yuklash
   useEffect(() => {
-    // Keshlanganliklarni tekshirish
     const loadImages = async () => {
       setLoading(true);
       try {
@@ -158,20 +96,18 @@ const Admin = () => {
   }, [activeMenu]);
 
   useEffect(() => {
-    const loadGreeting = async () => {
+    const loadGreetings = async () => {
       setLoading(true);
       try {
         const storedGreetings = await getGreetings();
-        if (storedGreetings.length > 0) {
-          setGreeting(storedGreetings[0]);
-        }
+        setGreetings(storedGreetings);
       } catch (error) {
-        console.error("Tabrikni olishda xatolik:", error);
+        console.error("Tabriklarni olishda xatolik:", error);
       } finally {
         setLoading(false);
       }
     };
-    loadGreeting();
+    loadGreetings();
   }, []);
 
   const handleImageClick = (img) => {
@@ -208,7 +144,9 @@ const Admin = () => {
 
   const closeEditModal = () => {
     setEditingGreeting(false);
-    setGreetingText("");
+    setFirstName("");
+    setLastName("");
+    setBirthDate("");
     setSelectedGreetingImage(null);
   };
 
@@ -283,45 +221,49 @@ const Admin = () => {
       alert("Iltimos, avval rasm tanlang!");
       return;
     }
-    if (!greetingText.trim()) {
-      alert("Iltimos, tabrik matnini kiriting!");
+    if (!firstName.trim() || !lastName.trim() || !birthDate.trim()) {
+      alert("Iltimos, barcha maydonlarni to'ldiring!");
       return;
     }
 
     try {
-      if (greeting) {
-        await updateGreeting(greeting.id, greetingText, selectedGreetingImage);
-      } else {
-        await addGreeting(greetingText, selectedGreetingImage);
-      }
+      const newGreeting = {
+        firstName,
+        lastName,
+        birthDate,
+        image: selectedGreetingImage,
+      };
+
+      await addGreeting(newGreeting);
       const storedGreetings = await getGreetings();
-      setGreeting(storedGreetings[0]);
+      setGreetings(storedGreetings);
       setEditingGreeting(false);
     } catch (error) {
       console.error("Tabrikni saqlashda xatolik:", error);
     }
 
-    setGreetingText("");
+    setFirstName("");
+    setLastName("");
+    setBirthDate("");
     setSelectedGreetingImage(null);
   };
 
-  const handleDeleteGreeting = async () => {
-    if (greeting) {
-      try {
-        await deleteGreeting(greeting.id);
-        setGreeting(null);
-      } catch (error) {
-        console.error("Tabrikni o'chirishda xatolik:", error);
-      }
+  const handleDeleteGreeting = async (id) => {
+    try {
+      await deleteGreeting(id);
+      const storedGreetings = await getGreetings();
+      setGreetings(storedGreetings);
+    } catch (error) {
+      console.error("Tabrikni o'chirishda xatolik:", error);
     }
   };
 
-  const handleEditGreeting = () => {
-    if (greeting) {
-      setGreetingText(greeting.text);
-      setSelectedGreetingImage(greeting.image);
-      setEditingGreeting(true);
-    }
+  const handleEditGreeting = (greeting) => {
+    setFirstName(greeting.text.firstName);
+    setLastName(greeting.text.lastName);
+    setBirthDate(greeting.text.birthDate);
+    setSelectedGreetingImage(greeting.text.image);
+    setEditingGreeting(true);
   };
 
   return (
@@ -401,70 +343,79 @@ const Admin = () => {
         </div>
         <div className="w-1/4 h-100 bg-white p-3 rounded-xl shadow-lg">
           <p className="text-2xl p-0 m-0 font-[500]">Tabrik qoshish</p>
-          {greeting ? (
-            <>
-              <div className="w-full h-[160px] mt-3 flex items-center justify-center text-gray-400 text-md font-semibold border-2 border-dashed border-gray-300 px-4 mx-auto rounded-md">
+          <label htmlFor="greet" className="cursor-pointer block">
+            <div className="w-full h-[160px] mt-3 flex items-center justify-center text-gray-400 text-md font-semibold border-2 border-dashed border-gray-300 px-4 mx-auto rounded-md">
+              {selectedGreetingImage ? (
                 <img
-                  src={greeting.image}
-                  alt="Tabrik rasmi"
+                  src={selectedGreetingImage}
+                  alt="Tanlangan rasm"
                   className="w-full h-full object-cover rounded-md"
-                  loading="lazy"
                 />
-              </div>
-              <p className="mt-2 text-center">{greeting.text}</p>
-              <div className="flex justify-end space-x-2 mt-2">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded-md"
-                  onClick={handleEditGreeting}
-                >
-                  Tahrirlash
-                </button>
-                <button
-                  className="bg-red-500 text-white px-3 py-1 rounded-md"
-                  onClick={handleDeleteGreeting}
-                >
-                  O'chirish
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <label htmlFor="greet" className="cursor-pointer block">
-                <div className="w-full h-[160px] mt-3 flex items-center justify-center text-gray-400 text-md font-semibold border-2 border-dashed border-gray-300 px-4 mx-auto rounded-md">
-                  {selectedGreetingImage ? (
-                    <img
-                      src={selectedGreetingImage}
-                      alt="Tanlangan rasm"
-                      className="w-full h-full object-cover rounded-md"
-                    />
-                  ) : (
-                    "Rasmlar yuklanmagan"
-                  )}
-                </div>
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden w-0"
-                id="greet"
-                onChange={handleGreetingFileChange}
-              />
-              <textarea
-                value={greetingText}
-                onChange={(e) => setGreetingText(e.target.value)}
-                cols="30"
-                className="form-control my-3"
-                rows="5"
-                placeholder="Tabrik matnini kiriting..."
-              ></textarea>
-              <button
-                className="btn btn-primary"
-                onClick={handleAddOrUpdateGreeting}
-              >
-                Qo'shish
-              </button>
-            </>
-          )}
+              ) : (
+                "Rasmlar yuklanmagan"
+              )}
+            </div>
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden w-0"
+            id="greet"
+            onChange={handleGreetingFileChange}
+          />
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Ism"
+            className="form-control my-3"
+          />
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Familiya"
+            className="form-control my-3"
+          />
+          <input
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            placeholder="Tug'ilgan sanasi"
+            className="form-control my-3"
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleAddOrUpdateGreeting}
+          >
+            Qo'shish
+          </button>
+
+          <div className="mt-4">
+            <h3 className="text-xl font-semibold">Tabriklar ro'yxati</h3>
+            <ul className="space-y-2">
+              {greetings.map((greeting, index) => (
+                <li key={index} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">
+                      {greeting.text.firstName} {greeting.text.lastName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {greeting.text.birthDate}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      className="bg-red-500 text-white px-2 py-1 rounded-md"
+                      onClick={() => handleDeleteGreeting(greeting.id)}
+                    >
+                      O'chirish
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -523,14 +474,27 @@ const Admin = () => {
               id="editGreet"
               onChange={handleGreetingFileChange}
             />
-            <textarea
-              value={greetingText}
-              onChange={(e) => setGreetingText(e.target.value)}
-              cols="30"
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Ism"
               className="form-control my-3"
-              rows="5"
-              placeholder="Tabrik matnini kiriting..."
-            ></textarea>
+            />
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Familiya"
+              className="form-control my-3"
+            />
+            <input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              placeholder="Tug'ilgan sanasi"
+              className="form-control my-3"
+            />
             <button
               className="btn btn-primary"
               onClick={handleAddOrUpdateGreeting}

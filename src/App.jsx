@@ -464,6 +464,7 @@ const App = () => {
                 src={video.video}
                 className="w-full h-[500px] object-cover rounded-md"
                 controls
+                autoPlay={true}
                 preload={preloadVideo(index)}
                 data-index={index}
                 onLoadStart={() => {

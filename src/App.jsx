@@ -17,7 +17,16 @@ import Ad from "./ad";
 const BOOTSTRAP_ICONS_CDN =
   "https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css";
 
-const menus = ["menu1", "menu2", "menu3", "menu4", "menu5", "menu6", "menu7", "galereya"];
+const menus = [
+  "menu1",
+  "menu2",
+  "menu3",
+  "menu4",
+  "menu5",
+  "menu6",
+  "menu7",
+  "galereya",
+];
 
 const App = () => {
   const [images, setImages] = useState([]);
@@ -407,7 +416,6 @@ const App = () => {
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
   const [videoLoading, setVideoLoading] = useState({});
   const renderVideoCarouselContent = useCallback(() => {
-    
     if (loading) {
       return (
         <div className="w-full h-[400px] flex items-center justify-center">
@@ -417,7 +425,7 @@ const App = () => {
         </div>
       );
     }
-      
+
     if (videos.length === 0) {
       return (
         <div className="w-full h-[400px] flex items-center justify-center text-gray-400 text-xl font-semibold border-2 border-dashed border-gray-300 rounded-md">
@@ -425,31 +433,37 @@ const App = () => {
         </div>
       );
     }
-      
+
     const handleBeforeChange = (current, next) => {
-      const videoElements = document.querySelectorAll('video');
+      const videoElements = document.querySelectorAll("video");
       if (videoElements[current]) {
         videoElements[current].pause();
         videoElements[current].currentTime = 0;
       }
     };
-  
+
     const updatedVideoCarouselSettings = {
       ...videoCarouselSettings,
       beforeChange: handleBeforeChange,
       autoplay: false,
     };
-    
+
     const preloadVideo = (index) => {
       // Only preload the current video and the next one
-      if (index === currentPlayingIndex || index === (currentPlayingIndex + 1) % videos.length) {
+      if (
+        index === currentPlayingIndex ||
+        index === (currentPlayingIndex + 1) % videos.length
+      ) {
         return "auto";
       }
       return "metadata"; // Only load metadata for other videos
     };
-      
+
     return (
-      <div className="carousel-container video-slider" style={{ overflow: "hidden" }}>
+      <div
+        className="carousel-container video-slider"
+        style={{ overflow: "hidden" }}
+      >
         <Carousel ref={carouselRef} {...updatedVideoCarouselSettings}>
           {videos.map((video, index) => (
             <div key={index} className="w-full flex justify-center">
@@ -459,7 +473,7 @@ const App = () => {
                   <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
-              
+
               <video
                 src={video.video}
                 className="w-full h-[500px] object-cover rounded-md"
@@ -468,13 +482,13 @@ const App = () => {
                 preload={preloadVideo(index)}
                 data-index={index}
                 onLoadStart={() => {
-                  setVideoLoading(prev => ({ ...prev, [index]: true }));
+                  setVideoLoading((prev) => ({ ...prev, [index]: true }));
                 }}
                 onCanPlay={() => {
-                  setVideoLoading(prev => ({ ...prev, [index]: false }));
+                  setVideoLoading((prev) => ({ ...prev, [index]: false }));
                 }}
                 onPlay={() => {
-                  const videoElements = document.querySelectorAll('video');
+                  const videoElements = document.querySelectorAll("video");
                   videoElements.forEach((el, i) => {
                     if (i !== index && !el.paused) {
                       el.pause();
@@ -487,9 +501,11 @@ const App = () => {
                   if (carouselRef.current) {
                     const nextIndex = (index + 1) % videos.length;
                     carouselRef.current.goTo(nextIndex);
-                    
+
                     setTimeout(() => {
-                      const nextVideo = document.querySelector(`video[data-index="${nextIndex}"]`);
+                      const nextVideo = document.querySelector(
+                        `video[data-index="${nextIndex}"]`
+                      );
                       if (nextVideo) {
                         // Start preloading the next video
                         nextVideo.preload = "auto";
@@ -510,32 +526,36 @@ const App = () => {
             </div>
           ))}
         </Carousel>
-          
+
         {videos.length > 0 && !loading && (
           <div className="flex items-center justify-center mt-4 space-x-3 relative">
             <div className="flex items-center justify-center space-x-2 max-w-full overflow-x-auto py-2 px-10">
               {videos.map((video, index) => (
-                <div 
+                <div
                   key={index}
                   className={`cursor-pointer rounded-md overflow-hidden flex-shrink-0 border-2 ${
-                    currentPlayingIndex === index ? 'border-blue-500' : 'border-transparent'
+                    currentPlayingIndex === index
+                      ? "border-blue-500"
+                      : "border-transparent"
                   }`}
                   onClick={() => {
-                    const videoElements = document.querySelectorAll('video');
-                    videoElements.forEach(video => {
+                    const videoElements = document.querySelectorAll("video");
+                    videoElements.forEach((video) => {
                       video.pause();
                       video.currentTime = 0;
                     });
-                    
+
                     // Start preloading before switching
                     if (videos[index]) {
-                      const selectedVideo = document.querySelector(`video[data-index="${index}"]`);
+                      const selectedVideo = document.querySelector(
+                        `video[data-index="${index}"]`
+                      );
                       if (selectedVideo) {
                         selectedVideo.preload = "auto";
                         selectedVideo.load();
-                        
+
                         carouselRef.current.goTo(index);
-                        
+
                         // Only play after a short delay to allow for initial loading
                         setTimeout(() => {
                           selectedVideo.play();
@@ -544,19 +564,24 @@ const App = () => {
                     }
                   }}
                 >
-                  <img 
-                    src={video.thumbnail || `https://via.placeholder.com/100x60/eee/999?text=Video ${index + 1}`} 
-                    alt={`Video ${index + 1}`} 
+                  <img
+                    src={
+                      video.thumbnail ||
+                      `https://via.placeholder.com/100x60/eee/999?text=Video ${
+                        index + 1
+                      }`
+                    }
+                    alt={`Video ${index + 1}`}
                     className="w-16 h-10 object-cover"
                   />
                 </div>
               ))}
             </div>
-                
+
             <button
               onClick={() => {
-                const videoElements = document.querySelectorAll('video');
-                videoElements.forEach(video => {
+                const videoElements = document.querySelectorAll("video");
+                videoElements.forEach((video) => {
                   video.pause();
                   video.currentTime = 0;
                 });
@@ -570,8 +595,8 @@ const App = () => {
             </button>
             <button
               onClick={() => {
-                const videoElements = document.querySelectorAll('video');
-                videoElements.forEach(video => {
+                const videoElements = document.querySelectorAll("video");
+                videoElements.forEach((video) => {
                   video.pause();
                   video.currentTime = 0;
                 });
@@ -649,7 +674,7 @@ const App = () => {
         const adDate = new Date(ad.adDate);
         const currentDate = new Date();
 
-        if (adDate < currentDate) {
+        if (adDate + 1 < currentDate) {
           localStorage.removeItem("ad");
           console.log("Eski reklama ma'lumoti o'chirildi.");
         } else {
@@ -684,7 +709,9 @@ const App = () => {
                 </div>
                 <div className="w-[61%] lex flefx-col items-center px-4">
                   <div className="w-full bg-white p-2 rounded-xl shadow-lg relative">
-                    {activeMenu === "galereya" ? renderVideoCarouselContent() : renderCarouselContent()}
+                    {activeMenu === "galereya"
+                      ? renderVideoCarouselContent()
+                      : renderCarouselContent()}
                   </div>
                 </div>
                 <div className="w-[19%] flex items-center justify-center">

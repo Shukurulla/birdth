@@ -57,14 +57,15 @@ const App = () => {
       menus.map((menu) => (
         <li
           key={menu}
-          className={`p-2 rounded-lg text-lg font-medium cursor-pointer text-white transition-all  ${
+          className={`p-2 flex items-center  justify-between rounded-lg text-lg font-medium cursor-pointer text-white transition-all  ${
             activeMenu === menu
-              ? "bg-[#ffffff36] hover:bg-[#ffffff49] "
-              : "hover:bg-[#ffffff49]"
+              ? "bg-[#ffffff62] hover:bg-[#ffffff49] "
+              : "hover:bg-[#ffffff49] bg-[#ffffff25]"
           }`}
           onClick={() => setActiveMenu(menu)}
         >
-          {menu.charAt(0).toUpperCase() + menu.slice(1)}
+          <span>{menu.charAt(0).toUpperCase() + menu.slice(1)}</span>
+          <i className="bi bi-chevron-right text-lg"></i>
         </li>
       )),
     [activeMenu]
@@ -596,7 +597,7 @@ const App = () => {
 
   const renderGreetingCard = useMemo(() => {
     return (
-      <div className="bg-[#ffffff34] w-100 h-100 p-4 rounded-xl shadow-lg">
+      <div className="bg-[#ffffff34] border w-100 h-100 p-4 rounded-xl shadow-lg">
         <h2 className="text-xl text-white font-semibold text-center mb-4">
           Bugungi tavalludlar
         </h2>
@@ -605,19 +606,19 @@ const App = () => {
             {todaysGreetings.map((item, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center mb-4 p-4 bg-gray-50 rounded-lg shadow-sm"
+                className="flex flex-col text-white items-center mb-4 p-4 bg-[#ffffff34] rounded-lg shadow-sm"
               >
                 <img
                   src={item.text.image}
                   alt="userImage"
-                  className="w-24 mx-auto h-24 rounded-full border-4 border-blue-200 shadow-md"
+                  className="w-28 mx-auto h-28 rounded-full border-4 border-blue-200 shadow-md"
                   loading="lazy"
                 />
-                <p className="mt-2 text-lg font-medium">
+                <p className="mt-2 text-xl font-medium">
                   {item.text.firstName} {item.text.lastName}
                 </p>
-                <p className="text-sm text-gray-500">{item.text.birthDate}</p>
-                <p>
+                <p className="text-md">{item.text.birthDate}</p>
+                <p className="text-lg">
                   Hurmatli {item.text.firstName} {item.text.lastName}, sizni
                   bugungi tug'ilgan kuningiz bilan tabriklaymiz🎉🎉
                 </p>
@@ -664,7 +665,7 @@ const App = () => {
         <Route
           path="/"
           element={
-            <div className=" min-h-screen">
+            <div className="w-[95%] mx-auto min-h-screen">
               <link rel="stylesheet" href={BOOTSTRAP_ICONS_CDN} />
               <div className="w-full text-center mb-2  text-white text-3xl shadow-md">
                 <img
@@ -673,22 +674,22 @@ const App = () => {
                   alt="banner-image"
                 />
               </div>
-              <div className="flex justify-between w-[100vw]">
-                <div className="w-[19%] bg-[#ffffff34] p-2 rounded-xl shadow-lg">
+              <div className="flex justify-between gap-[-10px]">
+                <div className="w-[21%] border bg-[#ffffff34] p-2 rounded-xl shadow-lg">
                   <ul className="space-y-3">{menuItems}</ul>
                 </div>
-                <div className="w-[61%] lex flefx-col items-center px-4">
-                  <div className="w-full bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
+                <div className="w-[60%]  flex flefx-col items-center px-3">
+                  <div className="w-full border bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
                     {activeMenu === "galereya"
                       ? renderVideoCarouselContent()
                       : renderCarouselContent()}
                   </div>
                 </div>
-                <div className="w-[19%] flex items-center justify-center">
+                <div className="w-[21%]  flex items-center justify-center">
                   {renderGreetingCard}
                 </div>
               </div>
-              <footer className="text-center py-4 border text-white shadow-md mt-3 ">
+              <footer className="text-center text-xl py-3 border rounded-lg text-white shadow-md mt-3 ">
                 <div className="w-[90%] mx-auto">
                   <marquee behavior="scroll" direction="left" scrollamount="5">
                     {ad?.adText}

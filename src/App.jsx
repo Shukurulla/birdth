@@ -368,7 +368,7 @@ const App = () => {
       return (
         <div
           className="w-full flex items-center justify-center"
-          style={{ height: `${Math.round(900 * scale)}px` }}
+          style={{ height: `${Math.round(600 * scale)}px` }}
         >
           <div
             className="font-semibold text-gray-500"
@@ -385,7 +385,7 @@ const App = () => {
         <div
           className="w-full flex items-center justify-center text-gray-400 font-semibold border-2 border-dashed border-gray-300 rounded-md"
           style={{
-            height: `${Math.round(900 * scale)}px`,
+            height: `${Math.round(800 * scale)}px`,
             fontSize: `${getFontSize(1.2)}rem`,
           }}
         >
@@ -402,7 +402,7 @@ const App = () => {
               <div
                 style={{
                   width: "100%",
-                  height: `${Math.round(800 * scale)}px`,
+                  height: `${Math.round(700 * scale)}px`,
                   backgroundImage: `url(${img.image})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -459,12 +459,13 @@ const App = () => {
 
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
   const [videoLoading, setVideoLoading] = useState({});
+
   const renderVideoCarouselContent = useCallback(() => {
     if (loading) {
       return (
         <div
           className="w-full flex items-center justify-center"
-          style={{ height: `${Math.round(700 * scale)}px` }}
+          style={{ height: `${Math.round(800 * scale)}px` }}
         >
           <div
             className="font-semibold text-gray-500"
@@ -481,7 +482,7 @@ const App = () => {
         <div
           className="w-full flex items-center justify-center text-gray-400 font-semibold border-2 border-dashed border-gray-300 rounded-md"
           style={{
-            height: `${Math.round(400 * scale)}px`,
+            height: `${Math.round(800 * scale)}px`,
             fontSize: `${getFontSize(1.2)}rem`,
           }}
         >
@@ -529,8 +530,8 @@ const App = () => {
                   <div
                     className="border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
                     style={{
-                      width: `${Math.round(50 * scale)}px`,
-                      height: `${Math.round(50 * scale)}px`,
+                      width: `${Math.round(40 * scale)}px`,
+                      height: `${Math.round(30 * scale)}px`,
                     }}
                   ></div>
                 </div>
@@ -539,7 +540,7 @@ const App = () => {
               <video
                 src={video.video}
                 className="w-full object-cover rounded-md"
-                style={{ height: `${Math.round(800 * scale)}px` }}
+                style={{ height: `${Math.round(640 * scale)}px` }}
                 controls
                 autoPlay={true}
                 preload={preloadVideo(index)}
@@ -793,13 +794,18 @@ const App = () => {
               }}
             >
               <link rel="stylesheet" href={BOOTSTRAP_ICONS_CDN} />
-              <div className="w-full text-center mb-2 text-white shadow-md">
+              <div className="w-full gap-3 pt-2 flex items-start text-center mb-2 text-white ">
                 <img
-                  src={banner}
-                  className="w-100 object-cover"
-                  style={{ height: `${Math.round(100 * scale)}px` }}
+                  src={`https://upload.wikimedia.org/wikipedia/commons/c/c9/Uzbekistan_coa.png`}
+                  style={{ height: `${Math.round(110 * scale)}px` }}
                   alt="banner-image"
                 />
+                <p
+                  className="pt-3 font-semibold"
+                  style={{ fontSize: `${Math.round(30 * scale)}px` }}
+                >
+                  5-Sonli maktab
+                </p>
               </div>
               <div
                 className="flex justify-between"

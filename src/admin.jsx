@@ -13,7 +13,16 @@ import {
 } from "./db";
 import { FFmpeg, FFFSType } from "@ffmpeg/ffmpeg";
 
-const menus = ["menu1", "menu2", "menu3", "menu4", "menu5", "menu6", "menu7", "galereya"];
+const menus = [
+  "menu1",
+  "menu2",
+  "menu3",
+  "menu4",
+  "menu5",
+  "menu6",
+  "menu7",
+  "galereya",
+];
 
 const BOOTSTRAP_ICONS_CDN =
   "https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css";
@@ -191,7 +200,6 @@ const Admin = () => {
     setIsModalOpen(true);
   };
 
-
   const handleDeleteImage = async () => {
     try {
       await deleteImage(selectedImage.id);
@@ -249,7 +257,6 @@ const Admin = () => {
     }
   };
 
-
   const handleVideoFileChange = async (event) => {
     const files = event.target.files;
     if (files.length > 0) {
@@ -258,26 +265,28 @@ const Admin = () => {
         try {
           setIsUploading(true);
           setUploadProgress(0);
-  
+
           // Video uchun noyob nom generatsiya qilish
-          const videoName = `video_${Date.now()}_${Math.floor(Math.random() * 1000)}.${file.name.split('.').pop()}`;
-  
+          const videoName = `video_${Date.now()}_${Math.floor(
+            Math.random() * 1000
+          )}.${file.name.split(".").pop()}`;
+
           // Videoni FileReader orqali o'qish
           const reader = new FileReader();
           reader.readAsDataURL(file);
           reader.onload = async () => {
             const videoDataUrl = reader.result;
-  
+
             // Thumbnail yaratish
             const thumbnail = await createVideoThumbnail(videoDataUrl);
-  
+
             // Videoni IndexedDB ga saqlash
             await addVideo(activeMenu, videoDataUrl, thumbnail, videoName);
-  
+
             // Videolarni yangilash
             const updatedVideos = await getVideos(activeMenu);
             setVideos(updatedVideos);
-  
+
             setIsUploading(false);
           };
         } catch (error) {
@@ -365,15 +374,15 @@ const Admin = () => {
     <div>
       <link rel="stylesheet" href={BOOTSTRAP_ICONS_CDN} />
       <div className="flex flex-1 h-[100vh] p-4">
-        <div className="w-1/4 h-100 bg-white p-3 rounded-xl shadow-lg">
+        <div className="w-1/4 h-100 bg-[#ffffff34] p-3 rounded-xl shadow-lg">
           <ul className="space-y-3">
             {menus.map((menu) => (
               <li
                 key={menu}
-                className={`p-2 rounded-lg text-lg font-medium cursor-pointer transition-all ${
+                className={`p-2 rounded-lg text-lg font-medium cursor-pointer text-white transition-all ${
                   activeMenu === menu
-                    ? "bg-blue-500 hover:bg-blue-400 text-white"
-                    : "hover:bg-gray-200 "
+                    ? "bg-[#ffffff36] hover:bg-[#ffffff49] "
+                    : "hover:bg-[#ffffff49]"
                 }`}
                 onClick={() => setActiveMenu(menu)}
               >
@@ -382,10 +391,10 @@ const Admin = () => {
             ))}
           </ul>
           <li
-            className={`p-2 rounded-lg text-lg font-medium cursor-pointer transition-all ${
+            className={`p-2 rounded-lg list-item text-lg font-medium cursor-pointer text-white transition-all ${
               activeMenu === "ad"
-                ? "bg-blue-500 hover:bg-blue-400 text-white"
-                : " hover:bg-gray-200"
+                ? "bg-[#ffffff36] hover:bg-[#ffffff49] "
+                : "hover:bg-[#ffffff49]"
             }`}
             onClick={() => setActiveMenu("ad")}
           >
@@ -394,18 +403,20 @@ const Admin = () => {
         </div>
         <div className="w-1/2 flex flex-col items-center px-6">
           {activeMenu === "ad" ? (
-            <div className="w-full min-h-[500px]  bg-white p-2 rounded-xl shadow-lg relative">
+            <div className="w-full min-h-[500px]  bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
               <div className="flex items-center justify-between">
-                <p className="text-2xl text-start p-0 m-0 font-[500]">
+                <p className="text-2xl text-white text-start p-0 m-0 font-[500]">
                   Elon qoshish
                 </p>
               </div>
               {ads ? (
                 <div className="ad-box mt-3">
-                  <li className="flex items-center justify-between px-3">
+                  <li className="flex bg-[#ffffff34] py-2 rounded-lg items-center justify-between px-3">
                     <div>
-                      <p className="font-medium text-lg ">{ads.adText}</p>
-                      <p className="text-sm text-gray-500">{ads.adDate}</p>
+                      <p className="font-medium text-lg text-white">
+                        {ads.adText}
+                      </p>
+                      <p className="text-md text-[#ffffffaf]">{ads.adDate}</p>
                     </div>
                     <div className="flex space-x-2">
                       <button
@@ -447,7 +458,7 @@ const Admin = () => {
               )}
             </div>
           ) : activeMenu === "galereya" ? (
-            <div className="w-full bg-white p-2 rounded-xl shadow-lg relative">
+            <div className="w-full bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
               <div className="flex py-2 justify-between items-center">
                 <p className="text-2xl p-0 m-0 font-[500]">Video qoshish</p>
                 <div className="">
@@ -455,7 +466,7 @@ const Admin = () => {
                     htmlFor="videoInput"
                     className="cursor-pointer w-10 h-10 bg-blue-500 rounded-full text-white flex items-center justify-center"
                   >
-                    <i className="bi bi-plus-lg text-xl"></i>
+                    <i className="bi bi-plus-lg text-xl text-white"></i>
                   </label>
 
                   <input
@@ -488,7 +499,12 @@ const Admin = () => {
                         src={video.thumbnail}
                         className="w-full h-[100px] object-cover rounded-md mb-2 cursor-pointer"
                       />
-                      <button className="btn btn-danger" onClick={() => handleDeleteVideo(video.id)}>Ochirish</button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDeleteVideo(video.id)}
+                      >
+                        Ochirish
+                      </button>
                     </div>
                   ))
                 ) : (
@@ -497,7 +513,7 @@ const Admin = () => {
               </div>
             </div>
           ) : (
-            <div className="w-full bg-white p-2 rounded-xl shadow-lg relative">
+            <div className="w-full bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
               <div className="flex py-2 justify-between items-center">
                 <p className="text-2xl p-0 m-0 font-[500]">Rasm qoshish</p>
                 <div className="">
@@ -551,7 +567,7 @@ const Admin = () => {
             </div>
           )}
         </div>
-        <div className="w-1/4 h-100 overflow-y-scroll bg-white p-3 rounded-xl shadow-lg">
+        <div className="w-1/4 h-100 overflow-y-scroll bg-[#ffffff34] p-3 rounded-xl shadow-lg">
           <p className="text-2xl p-0 m-0 font-[500]">Tabrik qoshish</p>
           <label htmlFor="greet" className="cursor-pointer block">
             <div className="w-full h-[160px] mt-3 flex items-center justify-center text-gray-400 text-md font-semibold border-2 border-dashed border-gray-300 px-4 mx-auto rounded-md">
@@ -610,7 +626,7 @@ const Admin = () => {
                     <p className="font-medium">
                       {greeting.text.firstName} {greeting.text.lastName}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-md text-[#ffffff96]">
                       {greeting.text.birthDate}
                     </p>
                   </div>
@@ -631,7 +647,7 @@ const Admin = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg relative">
+          <div className="bg-[#ffffff34] p-6 rounded-lg relative">
             <button
               className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
               onClick={() => setIsModalOpen(false)}
@@ -657,7 +673,7 @@ const Admin = () => {
 
       {isVideoModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg relative">
+          <div className="bg-[#ffffff34] p-6 rounded-lg relative">
             <button
               className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
               onClick={() => setIsVideoModalOpen(false)}
@@ -684,7 +700,7 @@ const Admin = () => {
 
       {editingGreeting && (
         <div className="fixed  inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg relative">
+          <div className="bg-[#ffffff34] p-6 rounded-lg relative">
             <button
               className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
               onClick={() => setEditingGreeting(false)}

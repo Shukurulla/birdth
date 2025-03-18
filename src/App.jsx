@@ -57,10 +57,10 @@ const App = () => {
       menus.map((menu) => (
         <li
           key={menu}
-          className={`p-2 rounded-lg text-lg font-medium cursor-pointer transition-all  ${
+          className={`p-2 rounded-lg text-lg font-medium cursor-pointer text-white transition-all  ${
             activeMenu === menu
-              ? "bg-blue-500 hover:bg-blue-400 text-white"
-              : "hover:bg-gray-200"
+              ? "bg-[#ffffff36] hover:bg-[#ffffff49] "
+              : "hover:bg-[#ffffff49]"
           }`}
           onClick={() => setActiveMenu(menu)}
         >
@@ -308,36 +308,6 @@ const App = () => {
     );
   }, [visibleThumbnails, startIndex, currentIndex, handleThumbnailClick]);
 
-  const renderVideoThumbnails = useCallback(() => {
-    if (!videos || videos.length === 0) return null;
-
-    return (
-      <div className="flex space-x-3">
-        {videos.map((video, index) => {
-          return (
-            <div
-              key={index}
-              style={{
-                width: "64px",
-                height: "48px",
-                backgroundImage: `url(${video.thumbnail})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                borderRadius: "0.375rem",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                opacity: currentIndex === index ? 1 : 0.5,
-                boxShadow:
-                  currentIndex === index ? "0 0 0 3px #3b82f6" : "none",
-              }}
-              onClick={() => handleThumbnailClick(index)}
-            />
-          );
-        })}
-      </div>
-    );
-  }, [videos, currentIndex, handleThumbnailClick]);
-
   const renderCarouselContent = useCallback(() => {
     if (loading) {
       return (
@@ -379,7 +349,7 @@ const App = () => {
         </Carousel>
 
         {images.length > 0 && !loading && (
-          <div className="flex items-center justify-center mt-4 space-x-3 relative">
+          <div className="flex w-[80%] mx-auto items-center justify-center mt-4 space-x-3 relative">
             {renderThumbnails()}
 
             <button
@@ -388,7 +358,7 @@ const App = () => {
               disabled={startIndex === 0}
               style={{ opacity: startIndex === 0 ? 0.5 : 1 }}
             >
-              <i className="bi bi-chevron-left text-xl"></i>
+              <i className="bi text-white bi-chevron-left text-2xl"></i>
             </button>
             <button
               onClick={handleNextPage}
@@ -396,7 +366,7 @@ const App = () => {
               disabled={endIndex >= images.length - 1}
               style={{ opacity: endIndex >= images.length - 1 ? 0.5 : 1 }}
             >
-              <i className="bi bi-chevron-right text-xl"></i>
+              <i className="bi text-white bi-chevron-right text-2xl"></i>
             </button>
           </div>
         )}
@@ -626,8 +596,8 @@ const App = () => {
 
   const renderGreetingCard = useMemo(() => {
     return (
-      <div className="bg-white w-100 h-100 p-4 rounded-xl shadow-lg">
-        <h2 className="text-xl font-semibold text-center mb-4">
+      <div className="bg-[#ffffff34] w-100 h-100 p-4 rounded-xl shadow-lg">
+        <h2 className="text-xl text-white font-semibold text-center mb-4">
           Bugungi tavalludlar
         </h2>
         {todaysGreetings.length > 0 ? (
@@ -694,9 +664,9 @@ const App = () => {
         <Route
           path="/"
           element={
-            <div className=" bg-gray-50 min-h-screen">
+            <div className=" min-h-screen">
               <link rel="stylesheet" href={BOOTSTRAP_ICONS_CDN} />
-              <div className="w-full text-center mb-2 bg-gray-800 text-white text-3xl shadow-md">
+              <div className="w-full text-center mb-2  text-white text-3xl shadow-md">
                 <img
                   src={banner}
                   className="w-100 object-cover h-[100px]"
@@ -704,11 +674,11 @@ const App = () => {
                 />
               </div>
               <div className="flex justify-between w-[100vw]">
-                <div className="w-[19%] bg-white p-2 rounded-xl shadow-lg">
+                <div className="w-[19%] bg-[#ffffff34] p-2 rounded-xl shadow-lg">
                   <ul className="space-y-3">{menuItems}</ul>
                 </div>
                 <div className="w-[61%] lex flefx-col items-center px-4">
-                  <div className="w-full bg-white p-2 rounded-xl shadow-lg relative">
+                  <div className="w-full bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
                     {activeMenu === "galereya"
                       ? renderVideoCarouselContent()
                       : renderCarouselContent()}
@@ -718,7 +688,7 @@ const App = () => {
                   {renderGreetingCard}
                 </div>
               </div>
-              <footer className="text-center py-3 bg-gray-800 text-white shadow-md mt-auto">
+              <footer className="text-center py-4 border text-white shadow-md mt-3 ">
                 <div className="w-[90%] mx-auto">
                   <marquee behavior="scroll" direction="left" scrollamount="5">
                     {ad?.adText}

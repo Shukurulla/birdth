@@ -28,6 +28,9 @@ const menus = [
   "galereya",
 ];
 
+// TV size constants (200cm × 123cm converted to viewport units)
+const TV_ASPECT_RATIO = 200 / 123;
+
 const App = () => {
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -35,6 +38,10 @@ const App = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [page, setPage] = useState(0);
   const [activeMenu, setActiveMenu] = useState("menu1");
+  const [screenSize, setScreenSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
   const itemsPerPage = 7;
   const [greeting, setGreeting] = useState([]);
   const carouselRef = useRef(null);
@@ -44,6 +51,31 @@ const App = () => {
 
   const today = new Date();
   const todayFormatted = moment(today).format("YYYY-MM-DD");
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Initial call
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Calculate responsive font size based on screen width
+  const getFontSize = (baseSize) => {
+    const scaleFactor = screenSize.width / 1920; // Assuming 1920px as reference width
+    return Math.max(baseSize * scaleFactor, baseSize * 0.7); // Don't go below 70% of base size
+  };
+
+  // Calculate scaling for elements
+  const getScale = useCallback(() => {
+    const widthScale = screenSize.width / 1920;
+    const heightScale = screenSize.height / 1080;
+    return Math.min(widthScale, heightScale);
+  }, [screenSize]);
 
   const todaysGreetings = useMemo(() => {
     return greeting.filter((item) => {
@@ -57,18 +89,26 @@ const App = () => {
       menus.map((menu) => (
         <li
           key={menu}
-          className={`p-2 flex items-center  justify-between rounded-lg text-lg font-medium cursor-pointer text-white transition-all  ${
+          className={` flex items-center justify-between rounded-lg font-medium cursor-pointer text-white transition-all ${
             activeMenu === menu
               ? "bg-[#ffffff62] hover:bg-[#ffffff49] "
               : "hover:bg-[#ffffff49] bg-[#ffffff25]"
           }`}
+          style={{
+            fontSize: `${getFontSize(1.1)}rem`,
+            padding: `${getFontSize(0.7)}rem`,
+            marginBottom: `${getFontSize(0.4)}rem`,
+          }}
           onClick={() => setActiveMenu(menu)}
         >
           <span>{menu.charAt(0).toUpperCase() + menu.slice(1)}</span>
-          <i className="bi bi-chevron-right text-lg"></i>
+          <i
+            className="bi bi-chevron-right"
+            style={{ fontSize: `${getFontSize(1.2)}rem` }}
+          ></i>
         </li>
       )),
-    [activeMenu]
+    [activeMenu, screenSize]
   );
 
   const preloadImages = useCallback((imageUrls) => {
@@ -278,6 +318,14 @@ const App = () => {
     }
   }, [startIndex, itemsPerPage, images.length]);
 
+  const scale = getScale();
+  const thumbnailSize = useMemo(() => {
+    return {
+      width: Math.round(64 * scale),
+      height: Math.round(48 * scale),
+    };
+  }, [scale]);
+
   const renderThumbnails = useCallback(() => {
     if (!visibleThumbnails || visibleThumbnails.length === 0) return null;
 
@@ -289,8 +337,8 @@ const App = () => {
             <div
               key={absoluteIndex}
               style={{
-                width: "64px",
-                height: "48px",
+                width: `${thumbnailSize.width}px`,
+                height: `${thumbnailSize.height}px`,
                 backgroundImage: `url(${img.image})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
@@ -307,13 +355,25 @@ const App = () => {
         })}
       </div>
     );
-  }, [visibleThumbnails, startIndex, currentIndex, handleThumbnailClick]);
+  }, [
+    visibleThumbnails,
+    startIndex,
+    currentIndex,
+    handleThumbnailClick,
+    thumbnailSize,
+  ]);
 
   const renderCarouselContent = useCallback(() => {
     if (loading) {
       return (
-        <div className="w-full h-[400px] flex items-center justify-center">
-          <div className="text-xl font-semibold text-gray-500">
+        <div
+          className="w-full flex items-center justify-center"
+          style={{ height: `${Math.round(800 * scale)}px` }}
+        >
+          <div
+            className="font-semibold text-gray-500"
+            style={{ fontSize: `${getFontSize(1.2)}rem` }}
+          >
             Rasmlar yuklanmoqda...
           </div>
         </div>
@@ -322,7 +382,13 @@ const App = () => {
 
     if (images.length === 0) {
       return (
-        <div className="w-full h-[400px] flex items-center justify-center text-gray-400 text-xl font-semibold border-2 border-dashed border-gray-300 rounded-md">
+        <div
+          className="w-full flex items-center justify-center text-gray-400 font-semibold border-2 border-dashed border-gray-300 rounded-md"
+          style={{
+            height: `${Math.round(800 * scale)}px`,
+            fontSize: `${getFontSize(1.2)}rem`,
+          }}
+        >
           Rasmlar yuklanmagan
         </div>
       );
@@ -336,7 +402,7 @@ const App = () => {
               <div
                 style={{
                   width: "100%",
-                  height: "500px",
+                  height: `${Math.round(800 * scale)}px`,
                   backgroundImage: `url(${img.image})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -357,17 +423,23 @@ const App = () => {
               onClick={handlePrevPage}
               className="absolute left-5"
               disabled={startIndex === 0}
-              style={{ opacity: startIndex === 0 ? 0.5 : 1 }}
+              style={{
+                opacity: startIndex === 0 ? 0.5 : 1,
+                fontSize: `${getFontSize(1.5)}rem`,
+              }}
             >
-              <i className="bi text-white bi-chevron-left text-2xl"></i>
+              <i className="bi text-white bi-chevron-left"></i>
             </button>
             <button
               onClick={handleNextPage}
               className="absolute right-5"
               disabled={endIndex >= images.length - 1}
-              style={{ opacity: endIndex >= images.length - 1 ? 0.5 : 1 }}
+              style={{
+                opacity: endIndex >= images.length - 1 ? 0.5 : 1,
+                fontSize: `${getFontSize(1.5)}rem`,
+              }}
             >
-              <i className="bi text-white bi-chevron-right text-2xl"></i>
+              <i className="bi text-white bi-chevron-right"></i>
             </button>
           </div>
         )}
@@ -382,6 +454,7 @@ const App = () => {
     renderThumbnails,
     startIndex,
     endIndex,
+    scale,
   ]);
 
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState(null);
@@ -389,8 +462,14 @@ const App = () => {
   const renderVideoCarouselContent = useCallback(() => {
     if (loading) {
       return (
-        <div className="w-full h-[400px] flex items-center justify-center">
-          <div className="text-xl font-semibold text-gray-500">
+        <div
+          className="w-full flex items-center justify-center"
+          style={{ height: `${Math.round(700 * scale)}px` }}
+        >
+          <div
+            className="font-semibold text-gray-500"
+            style={{ fontSize: `${getFontSize(1.2)}rem` }}
+          >
             Videolar yuklanmoqda...
           </div>
         </div>
@@ -399,7 +478,13 @@ const App = () => {
 
     if (videos.length === 0) {
       return (
-        <div className="w-full h-[400px] flex items-center justify-center text-gray-400 text-xl font-semibold border-2 border-dashed border-gray-300 rounded-md">
+        <div
+          className="w-full flex items-center justify-center text-gray-400 font-semibold border-2 border-dashed border-gray-300 rounded-md"
+          style={{
+            height: `${Math.round(400 * scale)}px`,
+            fontSize: `${getFontSize(1.2)}rem`,
+          }}
+        >
           Videolar yuklanmagan
         </div>
       );
@@ -441,13 +526,20 @@ const App = () => {
               {/* Loading indicator for videos */}
               {videoLoading[index] && (
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div
+                    className="border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+                    style={{
+                      width: `${Math.round(50 * scale)}px`,
+                      height: `${Math.round(50 * scale)}px`,
+                    }}
+                  ></div>
                 </div>
               )}
 
               <video
                 src={video.video}
-                className="w-full h-[500px] object-cover rounded-md"
+                className="w-full object-cover rounded-md"
+                style={{ height: `${Math.round(800 * scale)}px` }}
                 controls
                 autoPlay={true}
                 preload={preloadVideo(index)}
@@ -543,7 +635,11 @@ const App = () => {
                       }`
                     }
                     alt={`Video ${index + 1}`}
-                    className="w-16 h-10 object-cover"
+                    style={{
+                      width: `${Math.round(60 * scale * 1.5)}px`,
+                      height: `${Math.round(50 * scale * 1.5)}px`,
+                    }}
+                    className="object-cover"
                   />
                 </div>
               ))}
@@ -560,9 +656,12 @@ const App = () => {
               }}
               className="absolute left-5"
               disabled={startIndex === 0}
-              style={{ opacity: startIndex === 0 ? 0.5 : 1 }}
+              style={{
+                opacity: startIndex === 0 ? 0.5 : 1,
+                fontSize: `${getFontSize(1.5)}rem`,
+              }}
             >
-              <i className="bi bi-chevron-left text-xl"></i>
+              <i className="bi bi-chevron-left"></i>
             </button>
             <button
               onClick={() => {
@@ -575,9 +674,12 @@ const App = () => {
               }}
               className="absolute right-5"
               disabled={endIndex >= videos.length - 1}
-              style={{ opacity: endIndex >= videos.length - 1 ? 0.5 : 1 }}
+              style={{
+                opacity: endIndex >= videos.length - 1 ? 0.5 : 1,
+                fontSize: `${getFontSize(1.5)}rem`,
+              }}
             >
-              <i className="bi bi-chevron-right text-xl"></i>
+              <i className="bi bi-chevron-right"></i>
             </button>
           </div>
         )}
@@ -593,12 +695,16 @@ const App = () => {
     endIndex,
     currentPlayingIndex,
     videoLoading,
+    scale,
   ]);
 
   const renderGreetingCard = useMemo(() => {
     return (
       <div className="bg-[#ffffff34] border w-100 h-100 p-4 rounded-xl shadow-lg">
-        <h2 className="text-xl text-white font-semibold text-center mb-4">
+        <h2
+          className="text-white font-semibold text-center mb-4"
+          style={{ fontSize: `${getFontSize(1.5)}rem` }}
+        >
           Bugungi tavalludlar
         </h2>
         {todaysGreetings.length > 0 ? (
@@ -611,14 +717,23 @@ const App = () => {
                 <img
                   src={item.text.image}
                   alt="userImage"
-                  className="w-28 mx-auto h-28 rounded-full border-4 border-blue-200 shadow-md"
+                  className="mx-auto rounded-full border-4 border-blue-200 shadow-md"
+                  style={{
+                    width: `${Math.round(78 * scale * 1.5)}px`,
+                    height: `${Math.round(78 * scale * 1.5)}px`,
+                  }}
                   loading="lazy"
                 />
-                <p className="mt-2 text-xl font-medium">
+                <p
+                  className="mt-2 font-medium"
+                  style={{ fontSize: `${getFontSize(1.3)}rem` }}
+                >
                   {item.text.firstName} {item.text.lastName}
                 </p>
-                <p className="text-md">{item.text.birthDate}</p>
-                <p className="text-lg">
+                <p style={{ fontSize: `${getFontSize(1)}rem` }}>
+                  {item.text.birthDate}
+                </p>
+                <p style={{ fontSize: `${getFontSize(1.1)}rem` }}>
                   Hurmatli {item.text.firstName} {item.text.lastName}, sizni
                   bugungi tug'ilgan kuningiz bilan tabriklaymiz🎉🎉
                 </p>
@@ -626,13 +741,16 @@ const App = () => {
             ))}
           </Carousel>
         ) : (
-          <div className="text-center text-gray-400 py-4">
+          <div
+            className="text-center text-gray-400 py-4"
+            style={{ fontSize: `${getFontSize(1.1)}rem` }}
+          >
             Bugun tavallud topganlar yo'q.
           </div>
         )}
       </div>
     );
-  }, [todaysGreetings]);
+  }, [todaysGreetings, scale]);
 
   const ad = JSON.parse(localStorage.getItem("ad"));
 
@@ -665,31 +783,55 @@ const App = () => {
         <Route
           path="/"
           element={
-            <div className="w-[95%] mx-auto min-h-screen">
+            <div
+              className="mx-auto"
+              style={{
+                width: "95%",
+                height: "100vh",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <link rel="stylesheet" href={BOOTSTRAP_ICONS_CDN} />
-              <div className="w-full text-center mb-2  text-white text-3xl shadow-md">
+              <div className="w-full text-center mb-2 text-white shadow-md">
                 <img
                   src={banner}
-                  className="w-100 object-cover h-[100px]"
+                  className="w-100 object-cover"
+                  style={{ height: `${Math.round(100 * scale)}px` }}
                   alt="banner-image"
                 />
               </div>
-              <div className="flex justify-between gap-[-10px]">
-                <div className="w-[21%] border bg-[#ffffff34] p-2 rounded-xl shadow-lg">
-                  <ul className="space-y-3">{menuItems}</ul>
+              <div
+                className="flex justify-between"
+                style={{ gap: "1%", flex: 1 }}
+              >
+                <div
+                  className="border bg-[#ffffff34] p-2 rounded-xl shadow-lg"
+                  style={{ width: "21%" }}
+                >
+                  <ul className="space-y-2">{menuItems}</ul>
                 </div>
-                <div className="w-[60%]  flex flefx-col items-center px-3">
-                  <div className="w-full border bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
+                <div
+                  className="flex h-100 items-center "
+                  style={{ width: "56%" }}
+                >
+                  <div className="w-full  border bg-[#ffffff34] p-2 rounded-xl shadow-lg relative">
                     {activeMenu === "galereya"
                       ? renderVideoCarouselContent()
                       : renderCarouselContent()}
                   </div>
                 </div>
-                <div className="w-[21%]  flex items-center justify-center">
+                <div
+                  className="flex items-center justify-center"
+                  style={{ width: "21%" }}
+                >
                   {renderGreetingCard}
                 </div>
               </div>
-              <footer className="text-center text-xl py-3 border rounded-lg text-white shadow-md mt-3 ">
+              <footer
+                className="text-center py-3 border rounded-lg text-white shadow-md mt-2"
+                style={{ fontSize: `${getFontSize(1.2)}rem` }}
+              >
                 <div className="w-[90%] mx-auto">
                   <marquee behavior="scroll" direction="left" scrollamount="5">
                     {ad?.adText}

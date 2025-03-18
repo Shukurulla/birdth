@@ -368,7 +368,7 @@ const App = () => {
       return (
         <div
           className="w-full flex items-center justify-center"
-          style={{ height: `${Math.round(800 * scale)}px` }}
+          style={{ height: `${Math.round(900 * scale)}px` }}
         >
           <div
             className="font-semibold text-gray-500"
@@ -385,7 +385,7 @@ const App = () => {
         <div
           className="w-full flex items-center justify-center text-gray-400 font-semibold border-2 border-dashed border-gray-300 rounded-md"
           style={{
-            height: `${Math.round(800 * scale)}px`,
+            height: `${Math.round(900 * scale)}px`,
             fontSize: `${getFontSize(1.2)}rem`,
           }}
         >
@@ -778,7 +778,7 @@ const App = () => {
   }, []);
 
   return (
-    <>
+    <div className="">
       <Routes>
         <Route
           path="/"
@@ -787,7 +787,7 @@ const App = () => {
               className="mx-auto"
               style={{
                 width: "95%",
-                height: "100vh",
+                height: "99vh",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -828,23 +828,29 @@ const App = () => {
                   {renderGreetingCard}
                 </div>
               </div>
-              <footer
-                className="text-center py-3 border rounded-lg text-white shadow-md mt-2"
-                style={{ fontSize: `${getFontSize(1.2)}rem` }}
-              >
-                <div className="w-[90%] mx-auto">
-                  <marquee behavior="scroll" direction="left" scrollamount="5">
-                    {ad?.adText}
-                  </marquee>
-                </div>
-              </footer>
+              <div className="pb-2">
+                <footer
+                  className="text-center py-3 border rounded-lg text-white shadow-md my-2"
+                  style={{ fontSize: `${getFontSize(1.2)}rem` }}
+                >
+                  <div className="w-[90%] mx-auto">
+                    <marquee
+                      behavior="scroll"
+                      direction="left"
+                      scrollamount="5"
+                    >
+                      {ad?.adText}
+                    </marquee>
+                  </div>
+                </footer>
+              </div>
             </div>
           }
         />
         <Route path="/admin" element={<Admin />} />
         <Route path="/ad" element={<Ad />} />
       </Routes>
-    </>
+    </div>
   );
 };
 
